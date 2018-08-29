@@ -1,0 +1,124 @@
+---
+title: "Descriptive Statistics"
+subtitle: ""
+author: "Michael Luu"
+date: "10/08/2018"
+output:
+  xaringan::moon_reader:
+    css: [default, default, default-fonts]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+# Introduction to Statistics
+
+- Maybe get a quote ? Something interesting about why we use statistics
+
+---
+
+# Descriptive Statistics
+
+- Types of statistical measures, e.g. mean, median, mode, 
+- When to use SD, SE, and confidence intervals ? 
+
+---
+
+# Types of Variables
+
+Quantitative vs Qualitative 
+
+- Walk through the difference btween the two types of variables 
+
+---
+class: middle, center, inverse
+
+# Quantitative
+
+---
+
+# Continuous
+
+---
+
+# Discrete
+
+---
+class: middle, center, inverse
+
+# Qualitative
+
+---
+
+# Ordinal
+
+---
+
+# Nominal
+
+---
+class: middle, center, inverse
+
+# Measurement Error
+
+---
+# Standard Deviation / Variance
+
+---
+class: middle, center, inverse
+
+# Graphical Descriptives
+
+---
+
+# Types of Figures
+
+- Scatterplots
+- Barplots
+- Boxplots
+- Bland-Altman Plots
+
+- Critique the paper and talk about better alternatives to the lame mean bar plots with error bars 
+
+---
+
+# Scatterplots
+
+---
+
+# Barplots 
+
+---
+
+# Boxplots
+
+---
+
+# Bland Altman Plots
+
+---
+class: middle, center, inverse
+
+# Summary
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
