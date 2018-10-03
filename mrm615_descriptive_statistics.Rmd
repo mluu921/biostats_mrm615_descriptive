@@ -1,8 +1,7 @@
 ---
 title: "Descriptive Statistics"
-subtitle: ""
-author: "Michael Luu"
-date: "10/08/2018"
+author: "Michael Luu \n\n Biostatistics and Bioinformatics Research Center \n\n Samuel Oschin Comprehensive Cancer Institute \n\n Cedars Sinai Medical Center"
+date: "10/03/2018"
 output:
   xaringan::moon_reader:
     css: [default, default, default-fonts]
@@ -15,92 +14,719 @@ output:
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
+
+library(tidyverse)
+
+theme_set(theme_bw() + theme(panel.grid = element_blank()))
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.height = 4,
+  echo = F,
+  fig.align = 'center',
+  warning = F,
+  message = F,
+  out.width = '100%',
+  dpi = 300
+)
+
+
+
 ```
 
-# Introduction to Statistics
+```{r, include = F}
+# let's generate the patient population
 
-- Maybe get a quote ? Something interesting about why we use statistics
+rnorm2 <- function(n,mean,sd) { mean+sd*scale(rnorm(n)) }
+
+make_var <- function(prop) {
+  set.seed(1)
+  x <- rep(0, 12)
+  y <- rep(0, 22)
+  y[sample(1:length(y), prop * length(y))] <- 1
+  dat <- c(x, y)
+  return(dat)
+}
+
+set.seed(1)
+df <- tibble(
+  id =  1:34,
+  female = factor(c(rep(1, 34))),
+  inoca = c(rep(0, 12), rep(1, 22)),
+  age = round(c(rnorm2(12, mean = 49.2, sd = 11), rnorm2(22, mean = 52.6, sd = 13))),
+  bmi = c(rnorm2(12, mean = 25.5, sd = 4.5), rnorm2(22, mean = 27.2, sd = 5.3)),
+  bsa = c(rnorm2(12, mean = 1.78, sd = 0.20), rnorm2(22, mean = 1.82, sd = 0.19)),
+  hypertension = factor(make_var(.5)),
+  type_ii_diabetes = factor(make_var(.14)),
+  ever_smoker = factor(make_var(.32)),
+  dyslipidemia = factor(make_var(.46)),
+  family_hist_cad = factor(make_var(.73)),
+  beta_blocker = factor(make_var(.46)),
+  calc_chan_blocker = factor(make_var(.19)),
+  nitrates = factor(make_var(.28)),
+  aspirin = factor(make_var(.64)),
+  ace_inhib = factor(make_var(.14)),
+  statin = factor(make_var(.55)),
+  chest_pain = factor(make_var(.50)),
+  dyspnea = factor(make_var(.70))
+)
+
+# tableone::CreateTableOne(strata = 'inoca', data = df)
+# 
+# print(tableone::CreateTableOne(strata = 'inoca', data = df), nonnormal = T)
+
+```
+
+# Introduction
+
+```{r, fig.align='center'}
+knitr::include_graphics('images/sampling_figure.PNG')
+```
 
 ---
 
-# Descriptive Statistics
+# Introduction
 
-- Types of statistical measures, e.g. mean, median, mode, 
-- When to use SD, SE, and confidence intervals ? 
+### What is descriptive statistics ? 
+
+- **Descriptive statistics** is a collection of statistical measures and tools used to give us a better sense of the data we have in front of us (Sample)
+
+- Not to be confused with **inferential statistics** where we are trying to reach conclusions that extend beyond the immediate data we have available (Population).
 
 ---
 
-# Types of Variables
+# Introduction
 
-Quantitative vs Qualitative 
+```{r, echo = F, out.width='100%'}
+knitr::include_graphics('images/paper_title.PNG')
+```
 
-- Walk through the difference btween the two types of variables 
+---
+# Introduction
+
+### Background
+
+Magnetic resonance "native T1" mapping has been shown to be capable of characterizing abnormal micro circulation in patients with coronary artery disease (CAD). However the potential role of native T1 as an imaging marker and its association with indices of diastolic function or vasodilator-induced myocardial ischemia have not been explored.
+
+### Sample Population
+
+- Twenty-two female patients with INOCA and twelve female reference controls with matching age and body-mass index were studied.
+
+
+---
+
+# Introduction
+
+```{r, echo = F, fig.align='center', out.width='150%'}
+knitr::include_graphics('images/paper_raw_data.PNG')
+```
+
+---
+# Introduction
+### Why Descriptive Statistics ?
+
+- Provides an understanding of the underlying sample population
+
+- Simplifies large amounts of data to a simpler summary
+
+- Identifies potential measurement errors or mistakes
+
+---
+
+
+# Introduction
+
+```{r, echo = F, out.width='70%', fig.align='center', include = T}
+knitr::include_graphics('images/paper_table1.PNG')
+```
+
+---
+
+# Types of Data
+
+```{r, fig.align='center', out.width='110%'}
+knitr::include_graphics('images/different-types-of-varibales.gif')
+```
+
+---
+
+# Types of Data
+
+### Quantitative (Numeric)
+
+Variable that has been measured on a numeric or quantitative scale
+
+#### **Continuous** 
+  
+- Can theoretically take on an infinite number of values - accuracy is limited only by the measuring instrument 
+  - e.g. age, BMI, BSA, height, weight, etc..
+
+#### **Discrete** 
+- Numerical variables that are measured and can only be whole numbers 
+  - e.g. age, heart rate, number of medication taken, number of relapses, etc..
+
+
+---
+# Types of Data
+
+### Qualitative (Categorical)
+
+Variables that are typically not directly measured by an instrument, and are based on observations
+
+#### **Ordinal** 
+- Variables that have an inherent hierarchical order to the relationship among the different categories 
+  - e.g. pain scores, stage of cancer, education level, etc..
+
+#### **Nominal** 
+- Variables that are "named" or classified into one or more qualitative groups
+- Do not have a sense of ordering between the different categories
+  - e.g. risk factors, types of medications consumed, types of symptoms experienced, surgical outcomes, blood type, gender, etc..
+
+---
+# Types of Data
+
+### Why do we need to identify the types of data ? 
+
+In statistics we have specialized tools or measures to handle different type of data 
 
 ---
 class: middle, center, inverse
-
 # Quantitative
 
 ---
 
-# Continuous
+```{r, fig.width = 8, include = F}
+fig1 <- ggplot(df, aes(x = age)) + 
+  geom_histogram(binwidth = 5) + 
+  scale_x_continuous(breaks = seq(0, 100, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 1))
+
+fig2 <- ggplot(df, aes(x = 1, y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+
+cowplot::plot_grid(fig1, fig2)
+```
+
+# Graphical Summarization
+
+### Histograms
+
+.pull-left[
+```{r, fig.height=5, fig.width=5}
+fig1
+```
+
+]
+
+.pull-right[
+- Histograms allows us to group similar values into 'bins' with specific widths
+
+- Provides intuitive sense of both central tendency and dispersion
+
+- The y axis describes the frequency (counts) of the occurrences of values in each bin
+]
+
+---
+# Graphical Summarization
+
+### Dot plots
+
+.pull-left[
+```{r, fig.height=5, fig.width=5}
+fig2
+```
+
+]
+
+.pull-right[
+- Dot plots allows us to have a closer look at each observation as represented by individual dots
+
+- Also provides an intuitive sense of both central tendency and dispersion
+
+- Only useful for relatively smaller sets of data
+
+]
+
+
+---
+# Numerical Summarization
+
+### Measures of Location
+  - Mean
+  - Median
+  - Mode
+
+### Measures of Variability or Dispersion
+  - Minimum and Maximum
+  - Percentiles / Interquartile Range (IQR)
+  - Standard Deviation
 
 ---
 
-# Discrete
+# Measures of Location
+### Mean
+
+
+- The sample mean is the most commonly used and readily understood measure of central tendency.
+
+- The sample mean can be defined as:
+
+$$\huge \bar{x} = \frac{\sum x_i}{n}$$
+---
+# Mean
+#### Example
+
+##### Reference
+```{r, echo = F}
+
+sort(round(df[df$inoca == 0,]$age))
+
+```
+
+- The total sum of the reference age is `r round(sum(round(df[df$inoca == 0,]$age)), 2)`
+- The total number of measurements is `r length(round(df[df$inoca == 0,]$age))`
+- The mean is `r round(mean(round(df[df$inoca == 0,]$age)), 2)`
+
+
+
+##### INOCA
+```{r, echo = F}
+
+sort(round(df[df$inoca == 1,]$age))
+```
+
+- The total sum of the reference age is `r round(sum(round(df[df$inoca == 1,]$age)), 2)`
+- The total number of measurements is `r length(round(df[df$inoca == 1,]$age))`
+- The mean is `r round(mean(round(df[df$inoca == 1,]$age)), 2)`
 
 ---
+# Mean
+
+```{r}
+ggplot(df, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = .2, color = 'red') 
+```
+
+---
+
+# Measures of Location
+### Median
+
+- The median is the midpoint of the values 
+  -  We begin by ranking the data from smallest to largest
+  
+  -  The midpoint value is the point at which half the observations are above the value and half the observations are below the value *(50 percentile*). 
+  
+  - If there are two 'middle' values then the median is the average of the two mid values
+
+---
+# Median
+#### Example
+
+##### Reference
+```{r, echo = F}
+
+sort(round(df[df$inoca == 0,]$age))
+
+```
+
+- The median is `r round(median(round(df[df$inoca == 0,]$age)), 2)`
+
+##### INOCA
+```{r, echo = F}
+
+sort(round(df[df$inoca == 1,]$age))
+
+```
+
+- The median is `r round(median(round(df[df$inoca == 1,]$age)), 2)`
+
+---
+# Median
+
+```{r}
+ggplot(df, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  # stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", width = .2, color = 'blue')
+```
+
+---
+# Mean vs Median
+
+- The mean and median both measure central tendency. 
+
+- However ...
+  - The mean is more susceptible to outliers in the data. e.g. *unusual values*
+  - The median is more robust to outliers
+
+```{r, fig.width=8}
+library(gghighlight)
+fig <- ggplot(df, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", width = .2, color = 'blue') +
+  coord_cartesian(ylim = c(0, 80))
+
+dat <- df %>% select(., inoca, age)
+
+fig1 <- dat %>% 
+  mutate(., color = 0) %>%
+  add_row(inoca = 0, age = 5, color = 1) %>%
+  add_row(inoca = 0, age = 8, color = 1) %>%
+  add_row(inoca = 1, age = 5, color = 1) %>%
+  add_row(inoca = 1, age = 8, color = 1) %>%
+  ggplot(., aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y', aes(fill = factor(color))) +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", width = .2, color = 'blue') +
+  coord_cartesian(ylim = c(0, 80)) +
+  theme(legend.position = 'none') +
+  scale_fill_manual(values = c('black', 'red'))
+
+cowplot::plot_grid(fig, fig1)
+```
+
+---
+# Measures of Location
+### Mode
+
+- The mode is the value that appears most often in a set of values. 
+
+- Not always a measure of central tendency
+
+- The mode is only useful for discrete values or continuous values with limited digits of accuracy
+
+---
+# Mode
+
+### Age vs BMI
+
+#### Age (Discrete)
+```{r}
+sort(df$age)
+```
+
+#### BMI (Continuous)
+```{r}
+sort(df$bmi)
+```
+
+---
+# Mode
+#### Example
+
+```{r}
+mode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+
+##### Reference
+```{r, echo = F}
+sort(round(df[df$inoca == 0,]$age))
+table(sort(round(df[df$inoca == 0,]$age)))
+```
+
+- The mode is `r round(mode(round(df[df$inoca == 0,]$age)), 2)`
+
+##### INOCA
+```{r, echo = F}
+sort(round(df[df$inoca == 1,]$age))
+table(sort(round(df[df$inoca == 1,]$age)))
+```
+
+- The mode is `r round(mode(round(df[df$inoca == 1,]$age)), 2)`
+
+---
+# Mode
+
+```{r}
+library(gghighlight)
+
+dat_mode <- df %>%
+  group_by(., inoca) %>%
+  nest() %>%
+  mutate(., mode = map_dbl(data, ~ mode(.x$age))) %>%
+  unnest() %>%
+  mutate(., highlight = ifelse(age == mode, 1, 0))
+
+ggplot(dat_mode, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y', aes(fill = factor(highlight))) +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  theme(legend.position = 'none') +
+  scale_fill_manual(values = c('black', 'red'))
+
+
+```
+
+---
+# Measures of Variability or Dispersion
+### Minimum and Maximum
+
+A measure of dispersion and is defined as the smallest and largest value
+
+### Example
+##### Reference
+```{r, echo = F}
+
+sort(round(df[df$inoca == 0,]$age))
+
+```
+
+- The min is `r min(sort(round(df[df$inoca == 0,]$age)))` and max is `r max(sort(round(df[df$inoca == 0,]$age)))`
+
+##### INOCA
+```{r, echo = F}
+
+sort(round(df[df$inoca == 1,]$age))
+
+```
+
+- The min is `r min(sort(round(df[df$inoca == 1,]$age)))` and max is `r max(sort(round(df[df$inoca == 1,]$age)))`
+
+---
+# Minimum and Maximum
+```{r}
+ggplot(df, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", width = .2, color = 'blue') +
+  stat_summary(fun.y = min, fun.ymin = min, fun.ymax = min, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = max, fun.ymin = max, fun.ymax = max, geom = "crossbar", width = .2, color = 'red')
+```
+
+---
+# Measures of Variability or Dispersion
+### Percentiles / Interquartile Range (IQR)
+
+- The interquartile range is defined as the range between the 25th and 75th percentiles
+
+$$\LARGE IQR = Q_3 - Q_1$$ 
+
+- It is commonly denoted after presenting the median
+
+- The interquartile range can be used to describe the spread of the data. As the spread of the data increases, the IQR becomes larger. 
+
+- It is also used to build box plots.
+
+---
+# Percentiles / Interquartile Range (IQR)
+
+### Example
+##### Reference
+```{r, echo = F}
+
+sort(round(df[df$inoca == 0,]$age))
+
+x <- quantile(sort(round(df[df$inoca == 0,]$age)))
+
+x
+```
+
+- The 25th percentile is `r x[[2]]` and 75th percentile is `r x[[4]]`
+- The IQR is `r x[[4]] - x[[2]]`
+
+##### INOCA
+```{r, echo = F}
+
+sort(round(df[df$inoca == 1,]$age))
+x <- quantile(sort(round(df[df$inoca == 1,]$age)))
+```
+
+- The 25th percentile is `r x[[2]]` and 75th percentile is `r x[[4]]`
+- The IQR is `r x[[4]] - x[[2]]`
+
+---
+# Percentiles / Interquartile Range (IQR)
+```{r}
+
+quan75 <- function(x) {
+  quantile(x, .75)
+}
+
+quan25 <- function(x) {
+  quantile(x, .25)
+}
+
+
+ggplot(df, aes(x = factor(inoca), y = age)) + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y') +
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA')) +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", width = .2, color = 'blue') +
+  stat_summary(fun.y = min, fun.ymin = min, fun.ymax = min, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = max, fun.ymin = max, fun.ymax = max, geom = "crossbar", width = .2, color = 'red') +
+  stat_summary(fun.y = quan75, fun.ymin = quan75, fun.ymax = quan75, geom = "crossbar", width = .2, color = 'green') +
+  stat_summary(fun.y = quan25, fun.ymin = quan25, fun.ymax = quan25, geom = "crossbar", width = .2, color = 'green')
+```
+
+---
+# Measures of Variability or Dispersion
+### Standard Deviation
+
+The standard deviation is a measure of how spread out the data are about the mean. 
+
+$$\LARGE s = \sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i - \overline{x})^2}$$
+
+---
+
+# Measures of Variability or Dispersion
+### Standard Deviation
+
+All of the figures below have the same exact mean (mean = 0) with varying standard deviations
+
+```{r, fig.width=10}
+
+set.seed(1)
+
+dat <- map(list('1' = 5,'10' = 10, '20' = 20), ~ rnorm(n = 100, mean = 0, sd = .x))
+
+dat %>% enframe() %>% unnest() %>%
+  ggplot(., aes(x = value)) + geom_histogram() + 
+  facet_grid(~name, labeller = labeller(name = as_labeller(c('1' = 'SD = 1', '10' = 'SD = 10', '20' = 'SD = 20'))))
+
+```
+
+---
+# Presenting / Describing your data
+
+You should always include **BOTH** a *measure of central tendency* and *measure of dispersion* when presenting your data
+
+The choice is dependent on the distribution of your data
+
+### Symmetric Distribution
+- mean ± SD
+- median (25%, 75% quantiles)
+- median (IQR)
+- median (min - max)
+
+### Asymmetric Distribution
+- median (25%, 75% quantiles)
+- median (IQR)
+- median (min - max)
+
+---
+# Graphical Summarization
+
+- Histograms
+- Dot plots
+- Box plots
+
+---
+# Box plots
+
+```{r}
+ggplot(df, aes(x = factor(inoca), y = age)) + 
+  stat_boxplot(geom = "errorbar", width = 0.1) +
+  geom_boxplot(outlier.shape = '') + 
+  geom_dotplot(binwidth = 1, method = 'histodot', stackdir = 'center', binaxis = 'y', alpha = .5) + 
+  labs(x = '') +
+  scale_x_discrete(label = c('0' = 'Reference Control', '1' = 'INOCA'))
+
+```
+
+---
+
+# Box plots
+
+```{r, fig.align='center'}
+knitr::include_graphics('images/boxplot_explained.png')
+```
+
+---
+
 class: middle, center, inverse
-
 # Qualitative
 
 ---
+# Types of Data
 
-# Ordinal
+### Qualitative (Categorical)
+
+Variables that are typically not directly measured by an instrument, and are based on observations
+
+#### **Ordinal** 
+- Variables that have an inherent hierarchical order to the relationship among the different categories 
+  - e.g. pain scores, stage of cancer, education level, etc..
+
+#### **Nominal** 
+- Variables that are "named" or classified into one or more qualitative groups
+- Do not have a sense of ordering between the different categories
+  - e.g. risk factors, types of medications consumed, types of symptoms experienced, surgical outcomes, blood type, gender, etc..
+  
+---
+# Summarizing Qualitative Data
+
+The primary method of summarizing qualitative data is frequency **counts** and **percentages**
+
+- Graphical Methods 
+  - Bar Plots
 
 ---
+# Bar plots
 
-# Nominal
+```{r}
 
----
-class: middle, center, inverse
+risk_labels <- c('dyslipidemia' = 'Dyslipidemia',
+                 'ever_smoker' = 'Smoker',
+                 'family_hist_cad' = 'CAD',
+                 'hypertension' = 'Hypertension',
+                 'type_ii_diabetes' = 'Type II Diabetes')
 
-# Measurement Error
+dat <- df %>%
+  gather(., key, value, hypertension:family_hist_cad) %>%
+  group_by(., key) %>%
+  summarise(., value = sum(as.numeric(as.character(value)))) %>%
+  mutate(., percent = value / 22)
 
----
-# Standard Deviation / Variance
+ggplot(dat, aes(x = key, y = value)) +
+  geom_bar(stat = 'identity') + 
+  geom_text(aes(label = glue::glue('{format(round(value))}')), color = 'white', position = position_stack(vjust = .5)) + 
+  labs(x = '', y = 'Frequency', title = 'Risk Factors') +
+  scale_x_discrete(label = risk_labels)
 
----
-class: middle, center, inverse
 
-# Graphical Descriptives
-
----
-
-# Types of Figures
-
-- Scatterplots
-- Barplots
-- Boxplots
-- Bland-Altman Plots
-
-- Critique the paper and talk about better alternatives to the lame mean bar plots with error bars 
+```
 
 ---
+# Barplots
 
-# Scatterplots
+```{r}
+dat <- df %>%
+  gather(., key, value, 12:17) %>%
+  group_by(., key) %>%
+  summarise(., value = sum(as.numeric(as.character(value)))) %>%
+  mutate(., percent = value / 22)
 
----
+med_label <- c('beta_blocker' = 'B Blocker', 'calc_chan_blocker' = 'C.C. Blocker', 'nitrates' = 'Nitrates', 'aspirin' = 'Aspirin', 'ace_inhib' = 'Ace Inhib', 'statin' = 'Statin')
 
-# Barplots 
+ggplot(dat, aes(x = key, y = percent)) +
+  geom_bar(stat = 'identity') + 
+  geom_text(aes(label = glue::glue('{format(round(percent*100, 0), 2)}%')), 
+            position = position_stack(vjust = .5), color = 'white') +
+  labs(x = '', y = 'Percent', title = 'Medications') +
+  scale_x_discrete(label = med_label) +
+  scale_y_continuous(labels = scales::percent)
+```
 
----
-
-# Boxplots
-
----
-
-# Bland Altman Plots
 
 ---
 class: middle, center, inverse
@@ -108,8 +734,11 @@ class: middle, center, inverse
 # Summary
 
 ---
+# Summary
 
-
+```{r}
+knitr::include_graphics('images/summary_figure.PNG')
+```
 
 
 
