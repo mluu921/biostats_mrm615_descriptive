@@ -71,7 +71,7 @@ Michael Luu, MPH
 
 Biostatistics and Bioinformatics Research Center | Cedars Sinai Medical Center
 
-#### `r Sys.Date() %>% format(., '%B %d, %Y')`
+#### June 22, 2021
 
 ---
 
